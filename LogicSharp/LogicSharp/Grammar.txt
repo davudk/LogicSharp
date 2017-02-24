@@ -1,0 +1,7 @@
+﻿
+Stmt ::= Equivalence
+Equivalence ::= Implication { EQUIV Equivalence }
+Implication ::= Disjunction { IMPL Implication }
+Disjunction ::= Conjunction { DISJ Disjunction }
+Conjunction ::= Atom { CONJ Conjunction }
+Atom ::= NEG Atom | ( Stmt ) | LABEL
