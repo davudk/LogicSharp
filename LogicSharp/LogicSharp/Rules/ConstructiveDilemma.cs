@@ -12,7 +12,7 @@
         }
 
         public static Disjunction Perform(Conjunction conj, Disjunction disj) {
-            if (disj == null || disj == null || conj.Negated || disj.Negated) return null;
+            if (conj == null || disj == null || conj.Negated || disj.Negated) return null;
 
             Implication left = conj.Left as Implication;
             Implication right = conj.Right as Implication;

@@ -50,21 +50,45 @@ namespace LogicSharp {
             } else if (HasString("<->")) {
                 i += 3;
                 return new Token(TokenType.Equivalence, "<->");
+            } else if (HasString("≡")) {
+                i += 1;
+                return new Token(TokenType.Equivalence, "≡");
             } else if (HasString("->")) {
                 i += 2;
                 return new Token(TokenType.Implication, "->");
+            } else if (HasString("⊃")) {
+                i += 1;
+                return new Token(TokenType.Implication, "⊃");
             } else if (HasString("^")) {
                 i += 1;
                 return new Token(TokenType.Conjunction, "^");
+            } else if (HasString("&")) {
+                i += 1;
+                return new Token(TokenType.Conjunction, "&");
+            } else if (HasString("∧")) {
+                i += 1;
+                return new Token(TokenType.Conjunction, "∧");
             } else if (HasString("v")) {
                 i += 1;
                 return new Token(TokenType.Disjunction, "v");
             } else if (HasString("V")) {
                 i += 1;
                 return new Token(TokenType.Disjunction, "V");
-            } else if (HasString("-")) {
+            } else if (HasString("|")) {
                 i += 1;
-                return new Token(TokenType.Negation, "-");
+                return new Token(TokenType.Disjunction, "|");
+            } else if (HasString("∨")) {
+                i += 1;
+                return new Token(TokenType.Disjunction, "∨");
+            } else if (HasString("!")) {
+                i += 1;
+                return new Token(TokenType.Negation, "!");
+            } else if (HasString("~")) {
+                i += 1;
+                return new Token(TokenType.Negation, "~");
+            } else if (HasString("¬")) {
+                i += 1;
+                return new Token(TokenType.Negation, "¬");
             } else if (HasString("(")) {
                 i += 1;
                 return new Token(TokenType.LParen, "(");

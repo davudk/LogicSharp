@@ -12,6 +12,8 @@ namespace LogicSharp {
             Node = node;
             Index = index;
         }
+
+        public abstract string GetSourceString();
     }
 
     public class GivenStmt : Statement {
@@ -19,6 +21,8 @@ namespace LogicSharp {
 
         public GivenStmt(Scope scope, LogicNode node, int index)
             : base(scope, node, index) { }
+
+        public override string GetSourceString() => "Given";
     }
 
     public class ResultStmt : Statement {
@@ -56,6 +60,15 @@ namespace LogicSharp {
             RuleUsed = ruleUsed;
             SourceIndex0 = sourceIndex0;
             SourceIndex1 = sourceIndex1;
+        }
+
+        public override string GetSourceString() {
+            string str = RuleUsed.Abbreviation + ", " + SourceIndex0;
+
+            if (SourceIndex1 >= 0) str += ", " + SourceIndex1;
+            else if (SourceNode != null) str += ", " + SourceNode;
+
+            return str;
         }
     }
 }

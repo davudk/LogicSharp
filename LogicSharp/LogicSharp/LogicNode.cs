@@ -10,13 +10,14 @@ namespace LogicSharp {
         Label
     }
     public abstract class LogicNode {
+        public const char NegationCharacter = '¬';
         public NodeType Type { get; private set; }
         protected LogicNode left, right;
         protected string name;
         int _negations;
         public int Negations {
             get { return _negations; }
-            set { _negations = Math.Max(0, _negations); }
+            set { _negations = Math.Max(0, value); }
         }
         public bool Negated => Negations % 2 != 0;
 
@@ -69,8 +70,8 @@ namespace LogicSharp {
         public string ToString(bool reduceNegations, bool parens = true) {
             int neg = reduceNegations ? (Negated ? 1 : 0) : Negations;
             if (neg > 0) {
-                if (IsAtomic()) return new string('-', neg) + ToStringInner(reduceNegations);
-                else return new string('-', neg) + "(" + ToStringInner(reduceNegations, true) + ")";
+                if (IsAtomic()) return new string(NegationCharacter, neg) + ToStringInner(reduceNegations);
+                else return new string(NegationCharacter, neg) + "(" + ToStringInner(reduceNegations, true) + ")";
             } else {
                 string str = ToStringInner(reduceNegations, false);
                 return (parens && !IsAtomic()) ? WrapInParens(str) : str;
@@ -160,43 +161,47 @@ namespace LogicSharp {
     }
 
     public class Equivalence : LogicNode {
+        public const char Character = '≡';
         public LogicNode Left { get { return left; } set { left = value; } }
         public LogicNode Right { get { return right; } set { right = value; } }
 
         public Equivalence(LogicNode lhs, LogicNode rhs, int negations = 0)
             : base(NodeType.Equivalence, negations, lhs, rhs) { }
 
-        protected override string ToStringInner(bool reduceNegations, bool forceParens) => left.ToString(reduceNegations) + " <-> " + right.ToString(reduceNegations);
+        protected override string ToStringInner(bool reduceNegations, bool forceParens) => left.ToString(reduceNegations) + " " + Character.ToString() + " " + right.ToString(reduceNegations);
         public override LogicNode Clone() => new Equivalence(Left.Clone(), right.Clone(), Negations);
     }
     public class Implication : LogicNode {
+        public const char Character = '⊃';
         public LogicNode Antecedent { get { return left; } set { left = value; } }
         public LogicNode Consequent { get { return right; } set { right = value; } }
 
         public Implication(LogicNode antecedent, LogicNode consequent, int negations = 0)
             : base(NodeType.Implication, negations, antecedent, consequent) { }
 
-        protected override string ToStringInner(bool reduceNegations, bool forceParens) => left.ToString(reduceNegations) + " -> " + right.ToString(reduceNegations);
+        protected override string ToStringInner(bool reduceNegations, bool forceParens) => left.ToString(reduceNegations) + " " + Character.ToString() + " " + right.ToString(reduceNegations);
         public override LogicNode Clone() => new Implication(Antecedent.Clone(), Consequent.Clone(), Negations);
     }
     public class Conjunction : LogicNode {
+        public const char Character = '∧';
         public LogicNode Left { get { return left; } set { left = value; } }
         public LogicNode Right { get { return right; } set { right = value; } }
 
         public Conjunction(LogicNode lhs, LogicNode rhs, int negations = 0)
             : base(NodeType.Conjunction, negations, lhs, rhs) { }
 
-        protected override string ToStringInner(bool reduceNegations, bool forceParens) => left.ToString(reduceNegations) + " ^ " + right.ToString(reduceNegations);
+        protected override string ToStringInner(bool reduceNegations, bool forceParens) => left.ToString(reduceNegations) + " " + Character.ToString() + " " + right.ToString(reduceNegations);
         public override LogicNode Clone() => new Conjunction(Left.Clone(), Right.Clone(), Negations);
     }
     public class Disjunction : LogicNode {
+        public const char Character = '∨';
         public LogicNode Left { get { return left; } set { left = value; } }
         public LogicNode Right { get { return right; } set { right = value; } }
 
         public Disjunction(LogicNode lhs, LogicNode rhs, int negations = 0)
             : base(NodeType.Disjunction, negations, lhs, rhs) { }
 
-        protected override string ToStringInner(bool reduceNegations, bool forceParens) => left.ToString(reduceNegations) + " v " + right.ToString(reduceNegations);
+        protected override string ToStringInner(bool reduceNegations, bool forceParens) => left.ToString(reduceNegations) + " " + Character.ToString() + " " + right.ToString(reduceNegations);
         public override LogicNode Clone() => new Disjunction(Left.Clone(), Right.Clone(), Negations);
     }
     public class Label : LogicNode {
