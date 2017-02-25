@@ -13,19 +13,14 @@ namespace WinformsDemo {
         private static extern long ShowScrollBar(IntPtr hwnd, int wBar, bool bShow);
 
         Scope scope;
-        List<LogicNode> axioms;
+        List<GivenStmt> given;
         LogicNode conclusion;
-        StatementControl selected;
+        int selectedIndex = -1;
 
         public MainWindow() {
             InitializeComponent();            
             splitContainer.Panel1MinSize += SystemInformation.VerticalScrollBarWidth;
-            axioms = new List<LogicNode>();
-        }
-
-        protected override void OnShown(EventArgs e) {
-            MessageBox.Show("This was written fast, so don't expect it to be efficient.");
-            base.OnShown(e);
+            given = new List<GivenStmt>();
         }
 
         private void addAxiomButton_Click(object sender, EventArgs e) {
@@ -37,20 +32,15 @@ namespace WinformsDemo {
                 if (!string.IsNullOrWhiteSpace(stmt)) {
                     LogicNode node = LogicNode.Parse(stmt);
                     if (node == null) MessageBox.Show("Failed to parse input.");
-                    else {
-                        StatementControl stmtControl = new StatementControl();
-                        stmtControl.Statement = new GivenStmt(null, node, axioms.Count);
-                        stmtControl.Top = statementPanel.Controls.Count > 0 ? statementPanel.Controls[statementPanel.Controls.Count - 1].Bottom : 0;
-                        stmtControl.Width = statementPanel.Width - SystemInformation.VerticalScrollBarWidth;
-                        statementPanel.Controls.Add(stmtControl);
-
-                        axioms.Add(node);
-                        goto addAnotherAxiom;
+                    else {                        
+                        given.Add(new GivenStmt(null, node, given.Count));
+                        statementPanel.SetStatements(given);
                     }
+                    goto addAnotherAxiom;
                 }
             }
 
-            beginButton.Enabled = axioms.Count > 0 && conclusion != null;
+            beginButton.Enabled = given.Count > 0 && conclusion != null;
         }
 
         private void setConclusionButton_Click(object sender, EventArgs e) {
@@ -65,17 +55,17 @@ namespace WinformsDemo {
                 conclusionLabel.Text = conclusion.ToString();
             }
 
-            beginButton.Enabled = axioms.Count > 0 && conclusion != null;
+            beginButton.Enabled = given.Count > 0 && conclusion != null;
         }
 
         private void beginButton_Click(object sender, EventArgs e) {
             try {
-                scope = new Scope(axioms, conclusion);
+                scope = new Scope(given.Select((stmt) => stmt.Node), conclusion);
                 addAxiomButton.Enabled = false;
                 setConclusionButton.Enabled = false;
                 beginButton.Enabled = false;
 
-                RefreshStatements();
+                statementPanel.SetStatements(scope.Statements);
                 //List<Statement> stmts = new List<Statement>(scope.Statements);
 
                 //for (int i = 0; i < statementPanel.Controls.Count; i++) {
@@ -84,18 +74,6 @@ namespace WinformsDemo {
             } catch (Exception ex) {
                 MessageBox.Show(ex.Message);
             }
-        }
-
-        private void statementPanel_Resize(object sender, EventArgs e) {
-            int y = 0;
-            foreach (Control c in statementPanel.Controls) {
-                c.Top = y;
-                c.Width = statementPanel.Width - SystemInformation.VerticalScrollBarWidth;
-                y = c.Bottom;
-            }
-
-            statementPanel.HorizontalScroll.Visible = false;
-            ShowScrollBar(statementPanel.Handle, 0 /* SB_HORZ */, false);
         }
 
         private void rulePanel_Resize(object sender, EventArgs e) {
@@ -108,12 +86,11 @@ namespace WinformsDemo {
             ShowScrollBar(rulePanel.Handle, 0 /* SB_HORZ */, false);
         }
 
-        private void StmtControl_GotFocus(object sender, EventArgs e) {
-            StatementControl stmtControl = sender as StatementControl;
-            if (stmtControl == null) return;
-            selected = stmtControl;
-
-            UpdateRules();
+        private void statementPanel_SelectedStatementChanged(object sender, int e) {
+            selectedIndex = e;
+            if (!scope.Solved) {
+                UpdateRules();
+            }
         }
 
         static LogicRule[] simpleRules = {
@@ -128,15 +105,23 @@ namespace WinformsDemo {
         };
         void UpdateRules() {
             rulePanel.Controls.Clear();
-            
+
+            if (scope.Solved) {
+                MessageBox.Show("Solved!");
+                return;
+            }
+
+            if (selectedIndex < 0) return;
+
+            Statement selected = scope.Statements.ElementAt(selectedIndex);
             // simple rules (1-7)
             foreach (var rule in simpleRules) {
-                AddSimpleRuleControl(rule, selected.Statement);
+                AddSimpleRuleControl(rule, selected);
                 foreach (Statement stmt in scope.Statements) {
-                    if (stmt == selected.Statement)
+                    if (stmt == selected)
                         continue;
-                    AddSimpleRuleControl(rule, stmt, selected.Statement);
-                    AddSimpleRuleControl(rule, selected.Statement, stmt);
+                    AddSimpleRuleControl(rule, stmt, selected);
+                    AddSimpleRuleControl(rule, selected, stmt);
                 }
             }
 
@@ -148,6 +133,7 @@ namespace WinformsDemo {
         void AddSimpleRuleControl(LogicRule rule, params Statement[] stmts) {
             LogicNode result = rule.Do(stmts.Select((s) => s.Node).ToArray());            
             if (result == null) return;
+            if (scope.Statements.Count((stmt) => stmt.Node.Equals(result)) > 0) return;
 
             RuleControl ruleControl = new RuleControl();
             ruleControl.Rule = rule.Name;
@@ -157,13 +143,13 @@ namespace WinformsDemo {
             }
             info += Environment.NewLine + result.ToString();
             ruleControl.Info = info;
-            ruleControl.Tag = result;
+            //ruleControl.Tag = result;
             ruleControl.RuleSelect += (s, e) => {
                 bool success = false;
                 if (stmts.Length == 1) success = scope.TryRule(rule, stmts[0].Index);
                 else if (stmts.Length == 2) success = scope.TryRule(rule, stmts[0].Index, stmts[1].Index);
                 if (success) {
-                    RefreshStatements();
+                    statementPanel.SetStatements(scope.Statements);
                     UpdateRules();
                 } else {
                     MessageBox.Show("Failed to apply rule.");
@@ -173,27 +159,6 @@ namespace WinformsDemo {
             ruleControl.Top = rulePanel.Controls.Count > 0 ? rulePanel.Controls[rulePanel.Controls.Count - 1].Bottom : 0;
             ruleControl.Width = rulePanel.Width - SystemInformation.VerticalScrollBarWidth;
             rulePanel.Controls.Add(ruleControl);
-        }
-
-        void RefreshStatements() {
-            foreach (StatementControl stmtControl in statementPanel.Controls) {
-                stmtControl.GotFocus -= StmtControl_GotFocus;
-            }
-            statementPanel.Controls.Clear();
-
-            foreach (var stmt in scope.Statements) {
-                StatementControl stmtControl = new StatementControl();
-                stmtControl.Statement = stmt;
-                stmtControl.Top = statementPanel.Controls.Count > 0 ? statementPanel.Controls[statementPanel.Controls.Count - 1].Bottom : 0;
-                stmtControl.Width = statementPanel.Width - SystemInformation.VerticalScrollBarWidth;
-                stmtControl.GotFocus += StmtControl_GotFocus;
-                statementPanel.Controls.Add(stmtControl);
-            }
-
-            if (scope.Solved) {
-                MessageBox.Show("Solved!");
-                rulePanel.Enabled = false;
-            }
         }
     }
 }

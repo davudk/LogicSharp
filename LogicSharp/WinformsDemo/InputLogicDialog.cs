@@ -25,10 +25,10 @@ namespace WinformsDemo {
         }
 
         private void okButton_Click(object sender, System.EventArgs e) {
-            ReplaceText();
+            ReplaceText(true);
         }
 
-        void ReplaceText() {
+        void ReplaceText(bool replaceDash = false) {
             int loc = inputTextBox.SelectionStart;
 
             string text = inputTextBox.Text;
@@ -40,6 +40,7 @@ namespace WinformsDemo {
             text = text.Replace("v", Disjunction.Character.ToString());
             text = text.Replace("|", Disjunction.Character.ToString());
             text = text.Replace("!", LogicNode.NegationCharacter.ToString());
+            if (replaceDash) text = text.Replace("-", LogicNode.NegationCharacter.ToString());
             text = text.Replace("~", LogicNode.NegationCharacter.ToString());
 
             inputTextBox.TextChanged -= inputTextBox_TextChanged;

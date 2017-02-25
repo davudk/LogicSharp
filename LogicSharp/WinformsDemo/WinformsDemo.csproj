@@ -66,6 +66,9 @@
     <Compile Include="RuleControl.Designer.cs">
       <DependentUpon>RuleControl.cs</DependentUpon>
     </Compile>
+    <Compile Include="StatementPanel.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="StatementControl.cs">
       <SubType>UserControl</SubType>
     </Compile>

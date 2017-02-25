@@ -63,9 +63,9 @@ namespace LogicSharp {
         }
 
         public override string GetSourceString() {
-            string str = RuleUsed.Abbreviation + ", " + SourceIndex0;
+            string str = RuleUsed.Abbreviation + ", " + (SourceIndex0 + 1);
 
-            if (SourceIndex1 >= 0) str += ", " + SourceIndex1;
+            if (SourceIndex1 >= 0) str += ", " + (SourceIndex1 + 1);
             else if (SourceNode != null) str += ", " + SourceNode;
 
             return str;

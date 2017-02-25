@@ -41,6 +41,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="LogicNode.cs" />
+    <Compile Include="Parser.cs" />
     <Compile Include="Rules\AbsorptionRule.cs" />
     <Compile Include="Rules\MaterialEquivalenceRule.cs" />
     <Compile Include="Rules\MaterialImplicationRule.cs" />

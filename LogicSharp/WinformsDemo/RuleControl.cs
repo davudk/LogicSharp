@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using System.Windows.Forms;
 
 namespace WinformsDemo {
@@ -11,8 +12,12 @@ namespace WinformsDemo {
             InitializeComponent();
         }
 
-        private void selectButton_Click(object sender, System.EventArgs e) {
+        private void selectButton_Click(object sender, EventArgs e) {
             RuleSelect?.Invoke(this, e);
+        }
+
+        private void RuleControl_Resize(object sender, EventArgs e) {
+            infoLabel.MaximumSize = new Size(Width - selectButton.Width, 0);
         }
     }
 }

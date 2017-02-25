@@ -81,83 +81,12 @@ namespace LogicSharp {
         protected string WrapInParens(string s) => "(" + s + ")";
         protected abstract string ToStringInner(bool reduceNegations, bool preferParens = false);
         protected virtual bool IsAtomic() => false;
-
-        #region Parsing 
-        static LogicNode ParseStmt(Tokenizer tknr) {
-            return ParseEquivalence(tknr);
-        }
-        static LogicNode ParseEquivalence(Tokenizer tknr) {
-            LogicNode impl = ParseImplication(tknr);
-            Token tok;
-            if ((tok = tknr.PeekToken()) != null && tok.Type == TokenType.Equivalence) {
-                tknr.GetToken();
-                return new Equivalence(impl, ParseEquivalence(tknr));
-            }
-            return impl;
-        }
-        static LogicNode ParseImplication(Tokenizer tknr) {
-            LogicNode disj = ParseDisjunction(tknr);
-            Token tok;
-            if ((tok = tknr.PeekToken()) != null && tok.Type == TokenType.Implication) {
-                tknr.GetToken();
-                return new Implication(disj, ParseImplication(tknr));
-            }
-            return disj;
-        }
-        static LogicNode ParseDisjunction(Tokenizer tknr) {
-            LogicNode conj = ParseConjunction(tknr);
-            Token tok;
-            if ((tok = tknr.PeekToken()) != null && tok.Type == TokenType.Disjunction) {
-                tknr.GetToken();
-                return new Disjunction(conj, ParseDisjunction(tknr));
-            }
-            return conj;
-        }
-        static LogicNode ParseConjunction(Tokenizer tknr) {
-            LogicNode atom = ParseAtom(tknr);
-            Token tok;
-            if ((tok = tknr.PeekToken()) != null && tok.Type == TokenType.Conjunction) {
-                tknr.GetToken();
-                return new Conjunction(atom, ParseConjunction(tknr));
-            }
-            return atom;
-        }
-        static LogicNode ParseAtom(Tokenizer tknr) {
-            Token tok = tknr.PeekToken();
-            if (tok == null) return null;
-
-            if (tok.Type == TokenType.Negation) {
-                tknr.GetToken();
-                LogicNode atom = ParseAtom(tknr);
-                atom._negations++;
-                return atom;
-                //return new Negation(ParseAtom(tknr));
-            } else if (tok.Type == TokenType.LParen) {
-                tknr.GetToken();
-                LogicNode stmt = ParseStmt(tknr);
-                if ((tok = tknr.PeekToken()) != null && tok.Type == TokenType.RParen) {
-                    tknr.GetToken();
-                    return stmt;
-                } else {
-                    throw new NotImplementedException("Expected RParen.");
-                }
-            } else if (tok.Type == TokenType.Label) {
-                return new Label(tknr.GetToken().Lexeme);
-            }
-
-            return null;
-        }
-
-        public static LogicNode Parse(string raw) {
-            Tokenizer tknr = new Tokenizer(raw);
-            LogicNode result = ParseStmt(tknr);
-            if (result == null) return null;
-            return tknr.PeekToken() == null ? result : null;
-        }
-
-        #endregion
         
         public abstract LogicNode Clone();
+
+        public static LogicNode Parse(string raw) {
+            return Parser.ParseLogicNode(raw);
+        }
     }
 
     public class Equivalence : LogicNode {

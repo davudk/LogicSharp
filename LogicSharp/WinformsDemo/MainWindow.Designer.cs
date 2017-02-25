@@ -24,7 +24,7 @@
         /// </summary>
         private void InitializeComponent() {
             this.splitContainer = new System.Windows.Forms.SplitContainer();
-            this.statementPanel = new System.Windows.Forms.Panel();
+            this.statementPanel = new WinformsDemo.StatementPanel();
             this.controlPanel = new System.Windows.Forms.Panel();
             this.beginButton = new System.Windows.Forms.Button();
             this.setConclusionButton = new System.Windows.Forms.Button();
@@ -67,14 +67,13 @@
             // statementPanel
             // 
             this.statementPanel.AutoScroll = true;
-            this.statementPanel.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.statementPanel.BackColor = System.Drawing.SystemColors.ControlDarkDark;
             this.statementPanel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.statementPanel.Location = new System.Drawing.Point(0, 50);
             this.statementPanel.Name = "statementPanel";
             this.statementPanel.Size = new System.Drawing.Size(640, 482);
-            this.statementPanel.TabIndex = 2;
-            this.statementPanel.Resize += new System.EventHandler(this.statementPanel_Resize);
+            this.statementPanel.TabIndex = 3;
+            this.statementPanel.SelectedStatementChanged += new System.EventHandler<int>(this.statementPanel_SelectedStatementChanged);
             // 
             // controlPanel
             // 
@@ -192,11 +191,11 @@
         private System.Windows.Forms.Label conclusionLabel;
         private System.Windows.Forms.Label conclusionPromptLabel;
         private System.Windows.Forms.Panel controlPanel;
-        private System.Windows.Forms.Panel statementPanel;
         private System.Windows.Forms.Button addAxiomButton;
         private System.Windows.Forms.Button beginButton;
         private System.Windows.Forms.Button setConclusionButton;
         private System.Windows.Forms.Panel rulePanel;
+        private StatementPanel statementPanel;
     }
 }
 
